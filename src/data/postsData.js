@@ -20,4 +20,4 @@ export const initialPosts = [
     author: "Daniel Smith",
     date: "2026-10-29"
   }
-];
+]; 
