@@ -1,62 +1,61 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
-export default function CommentForm({ onAddComment, isSubmitting }) {
-  const [name, setName] = useState("");
-  const [body, setBody] = useState("");
-  const [validationError, setValidationError] = useState("");
+export default function CommentForm({ onAddComment }) {
+  const { user, isAuthenticated } = useContext(AuthContext);
+  const [commentText, setCommentText] = useState("");
+  const [formError, setFormError] = useState("");
+
+  if (!isAuthenticated) {
+    return (
+      <div className="login-prompt-box">
+        <p>You must be logged in to leave a comment.</p>
+        <Link to="/login" className="cta-primary-btn">
+          Log in to Comment
+        </Link>
+      </div>
+    );
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!name.trim() || !body.trim()) {
-      setValidationError("Please fill out both your name and comment before submitting.");
+    if (!commentText.trim()) {
+      setFormError("Please enter a comment before submitting.");
       return;
     }
 
-    setValidationError("");
+    setFormError("");
     onAddComment({
-      name: name.trim(),
-      body: body.trim(),
+      name: user.username,
+      body: commentText.trim()
     });
 
-    setName("");
-    setBody("");
+    setCommentText("");
   };
 
   return (
     <form className="comment-form" onSubmit={handleSubmit}>
       <h3>Leave a Comment</h3>
-      
-      {validationError && (
-        <div className="form-error-msg">{validationError}</div>
-      )}
+      <p className="commenting-as">
+        Posting as <strong>{user.username}</strong>
+      </p>
+
+      {formError && <div className="error-banner">{formError}</div>}
 
       <div className="form-group">
-        <label htmlFor="commenter-name">Name</label>
-        <input
-          id="commenter-name"
-          type="text"
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={isSubmitting}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="commenter-body">Comment</label>
+        <label htmlFor="commenter-text">Comment</label>
         <textarea
-          id="commenter-body"
+          id="commenter-text"
           rows="3"
           placeholder="Write your comment..."
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          disabled={isSubmitting}
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
         />
       </div>
 
-      <button type="submit" className="submit-btn" disabled={isSubmitting}>
-        {isSubmitting ? "Posting..." : "Submit Comment"}
+      <button type="submit" className="submit-btn">
+        Submit Comment
       </button>
     </form>
   );
